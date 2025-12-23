@@ -25,6 +25,7 @@ For more details, see the full [LICENSE](LICENSE) file.
 git clone https://github.com/emnawer/modular-gas-optimized-governance.git
 cd modular-gas-optimized-governance
 npm install
+npm install -g ganache
 ```
 
 ### **Deployment Options**

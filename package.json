@@ -2,17 +2,18 @@
   "name": "modular-gas-optimized-governance",
   "version": "1.0.0",
   "private": true,
-  "description": "Truffle workspace for MiningManagement and related contracts",
+  "description": "Truffle workspace for related contracts",
   "scripts": {
     "compile": "truffle compile",
     "migrate": "truffle migrate",
-    "test": "truffle test"
+    "test": "truffle test test/Token.test.js"
   },
   "devDependencies": {
-    "truffle": "^5.5.21",
-    "chai": "^6.2.1"
+    "truffle": "^5.5.21"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.9.6"
+    "@openzeppelin/contracts": "^4.9.6",
+    "chai": "^6.2.1"
   }
 }
+
