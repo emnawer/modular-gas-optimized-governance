@@ -1,19 +1,47 @@
 const { expect } = require('chai');
-const { BN, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
-
+const Web3 = require('web3');
 const Token = artifacts.require('Token');
+
+// Initialize Web3
+const web3 = new Web3(web3.currentProvider);
+
+// Helper function to convert to wei
+const toWei = (value) => web3.utils.toWei(value.toString(), 'ether');
+
+// Helper function to convert from wei
+const fromWei = (value) => web3.utils.fromWei(value.toString(), 'ether');
+
+// Helper to check for reverts
+const expectRevert = async (promise, expectedMessage) => {
+    try {
+        await promise;
+        expect.fail('Expected revert not received');
+    } catch (error) {
+        if (expectedMessage) {
+            expect(error.message).to.include(expectedMessage);
+        } else {
+            expect(error.message).to.include('revert');
+        }
+    }
+};
 
 contract('Token', function (accounts) {
     const [deployer, owner, custodian1, custodian2, custodian3, user1, user2] = accounts;
-    const initialSupply = new BN('1000000000000000000000000'); // 1M tokens with 18 decimals
-    const amount = new BN('1000000000000000000'); // 1 token with 18 decimals
-
+    const initialSupply = toWei('1000000'); // 1M tokens
+    const amount = toWei('1'); // 1 token
+    const ROLE_CUSTODIAN = new web3.utils.BN('2'); // 1 << 1
+    
     let token;
     let initialCustodians = [custodian1, custodian2, custodian3];
 
     beforeEach(async function () {
         token = await Token.new(initialCustodians, { from: deployer });
         await token.transfer(user1, amount, { from: deployer });
+        
+        // Grant custodian role to test accounts
+        for (const custodian of initialCustodians) {
+            await token.grantContractRole(ROLE_CUSTODIAN, custodian, { from: deployer });
+        }
     });
 
     describe('Deployment', function () {

@@ -42,17 +42,17 @@ module.exports = {
     // options below to some value.
     //
     development: {
-     host: "0.0.0.0",     // Localhost (default: none)
-     port: 8545,            // Standard Ethereum port (default: none)
-     network_id: "*",       // Any network (default: none)
+      host: "0.0.0.0",       // Localhost (default: none)
+      port: 8545,            // Standard Ethereum port (default: none)
+      network_id: "*",       // Any network (default: none)
     },
 
     dashboard: {
-     host: "0.0.0.0",
-     port: 24012,
-     network_id: "*",
-     networkCheckTimeout: 120000,
-     timeoutBlocks: 200
+      host: "0.0.0.0",
+      port: 24012,
+      network_id: "*",
+      networkCheckTimeout: 120000,
+      timeoutBlocks: 200
     },
     //
     // An additional network, but with some advanced options…

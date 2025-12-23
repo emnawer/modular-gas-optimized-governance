@@ -46,8 +46,8 @@ truffle migrate --network development
 #### **2. One-Click Deploy**
 Deploy directly using your preferred online IDE:
 
-[![Open in Replit](https://replit.com/badge/github/emnawer/modular-gas-optimized-governance)](https://replit.com/new/github/emnawer/modular-gas-optimized-governance)
-[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat&logo=codesandbox)](https://codesandbox.io/s/github/emnawer/modular-gas-optimized-governance)
+[![Open in Replit](https://replit.com/badge/github/emnawer/modular-gas-optimized-governance)](https://replit.com/new/github/emnawer/modular-gas-optimized-governance/tree/dev)
+[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat&logo=codesandbox)](https://codesandbox.io/s/github/emnawer/modular-gas-optimized-governance/tree/dev)
 
 
 ### **Testnet/Mainnet Deployment**

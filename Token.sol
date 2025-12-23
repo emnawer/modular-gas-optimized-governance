@@ -14,6 +14,7 @@ import "./modules/CustodianGovernance.sol";
 contract Token is ERC20, ContractAccessControl, BitmaskUserStatus, Rescuable, CrowdsaleModule, CustodianGovernance {
     // Roles
     uint256 public constant ROLE_ADMIN = 1 << 0;
+    uint256 public constant ROLE_CUSTODIAN = 1 << 1; // Example: second bit for custodians
     
     // Flags
     uint256 public constant FLAG_BLACKLISTED = 1 << 0;
@@ -67,7 +68,7 @@ contract Token is ERC20, ContractAccessControl, BitmaskUserStatus, Rescuable, Cr
      * @param to Address to receive the minted tokens
      * @param amount Amount of tokens to mint
      */
-    function proposeMint(address to, uint256 amount) external onlyCustodians {
+    function proposeMint(address to, uint256 amount) external onlyContractRole(ROLE_CUSTODIAN) {
         _submitProposal(PROPOSAL_MINT, abi.encode(to, amount), 0);
     }
     
@@ -76,7 +77,7 @@ contract Token is ERC20, ContractAccessControl, BitmaskUserStatus, Rescuable, Cr
      * @param account Address to update
      * @param status True to blacklist, false to remove from blacklist
      */
-    function proposeBlacklistUpdate(address account, bool status) external onlyCustodians {
+    function proposeBlacklistUpdate(address account, bool status) external onlyContractRole(ROLE_CUSTODIAN) {
         _submitProposal(PROPOSAL_BLACKLIST, abi.encode(account, status), 0);
     }
     
