@@ -3,6 +3,78 @@
 A lightweight, gas-optimized Solidity library for modular governance and access control. This suite utilizes uint256 bitmasks for permission management, offering significant gas savings over traditional boolean mappings.  
 This repository contains standalone abstract contracts designed to be dropped into any DeFi project requiring efficient state management.
 
+## 📜 LGPL License Benefits
+
+This project is licensed under the GNU Lesser General Public License (LGPL). Key benefits of LGPL over GPL for this project:
+
+- **Linking Flexibility**: Projects can link to this library without being subject to LGPL's copyleft requirements, as long as they only use the library through its public interface.
+- **Commercial Friendliness**: Businesses can integrate this library into their proprietary projects without being required to open-source their entire codebase.
+- **Better Adoption**: The permissive nature of LGPL encourages wider adoption in the ecosystem while still ensuring improvements to the library itself remain open source.
+- **Interoperability**: Works well with other open source licenses, making it easier to integrate with various projects in the blockchain space.
+
+For more details, see the full [LICENSE](LICENSE) file.
+## **🚀 Quick Start & Deployment**
+
+### **Prerequisites**
+- [Node.js](https://nodejs.org/) (v16+ recommended)
+- [Truffle Suite](https://trufflesuite.com/) (for development and deployment)
+- [Git](https://git-scm.com/)
+
+### **Installation**
+```bash
+git clone https://github.com/emnawer/modular-gas-optimized-governance.git
+cd modular-gas-optimized-governance
+npm install
+```
+
+### **Deployment Options**
+
+#### **1. Local Development**
+```bash
+# Start local development blockchain
+truffle develop
+
+# In the Truffle console, compile and migrate:
+compile
+migrate
+
+# Or for a specific network configuration:
+truffle migrate --network development
+```
+
+#### **2. One-Click Deploy**
+Deploy directly using your preferred online IDE:
+
+[![Open in Replit](https://replit.com/badge/github/emnawer/modular-gas-optimized-governance)](https://replit.com/new/github/emnawer/modular-gas-optimized-governance)
+[![Open in CodeSandbox](https://img.shields.io/badge/Open%20in-CodeSandbox-blue?style=flat&logo=codesandbox)](https://codesandbox.io/s/github/emnawer/modular-gas-optimized-governance)
+
+
+### **Testnet/Mainnet Deployment**
+1. Configure your `truffle-config.js` with the desired network settings
+2. Set up your `.env` file with your private key and RPC URL
+3. Run the migration:
+   ```bash
+   truffle migrate --network <network-name>
+   ```
+
+### **Verification**
+After deployment, verify your contract on Etherscan using the Truffle verification plugin:
+
+1. Install the verification plugin:
+   ```bash
+   npm install -D truffle-plugin-verify
+   ```
+
+2. Add this to your `truffle-config.js`:
+   ```javascript
+   plugins: ['truffle-plugin-verify']
+   ```
+
+3. Verify your contract:
+   ```bash
+   truffle run verify ContractName --network <network-name>
+   ```
+
 ## **⚡ Key Features**
 
 * **Gas Optimized:** Uses uint256 bitmasks for Role-Based Access Control (RBAC) and User Statuses (e.g., Blacklist, VIP), reducing storage usage and gas costs compared to standard libraries.  
