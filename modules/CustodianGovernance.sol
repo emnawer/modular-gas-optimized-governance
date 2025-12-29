@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: LGPL-2.1-or-later
 pragma solidity ^0.8.20;
 
 /**
@@ -7,18 +7,18 @@ pragma solidity ^0.8.20;
  * @dev Supports typed proposals (e.g., Admin vs Financial) using bitmasks.
  */
 abstract contract CustodianGovernance {
-    
+
     // ===========================================
     //             State Variables
     // ===========================================
-    
+
     // Role Bitmask: defines what permissions a custodian has.
     // e.g. 1 = General, 2 = Financial, 4 = Security
     mapping(address => uint256) public custodianRoles;
-    
+
     // List used for Quorum calculation (Total Supply of voters)
     address[] public custodianList;
-    
+
     struct Proposal {
         uint256 id;
         address proposer;
@@ -27,13 +27,15 @@ abstract contract CustodianGovernance {
         uint256 yesVotes;
         uint256 noVotes;
         bool executed;
+        bytes data;
+        uint256 value;
         mapping(address => bool) hasVoted;
     }
 
     // Proposal tracking
     mapping(uint256 => Proposal) public proposals;
     uint256 public proposalCount;
-    
+
     uint256 public constant QUORUM_NUMERATOR = 2;
     uint256 public constant QUORUM_DENOMINATOR = 3;
 
@@ -69,7 +71,7 @@ abstract contract CustodianGovernance {
     // ===========================================
     //           Management Functions
     // ===========================================
-    
+
     /**
      * @param _initialCustodians List of addresses to grant default role (1).
      */
@@ -97,28 +99,47 @@ abstract contract CustodianGovernance {
      * @param typeMask The category of the proposal (e.g., 1 for Admin). 
      * Proposer must possess this role bit to create it.
      */
-    function createProposal(string calldata description, uint256 typeMask) external onlyCustodian returns (uint256) {
-        // Optional: Require proposer to have the role they are proposing for?
-        // Let's enforce: You can't propose a "Financial" change if you aren't a "Financial" custodian.
+    function createProposal(string calldata description, uint256 typeMask, bytes calldata data, uint256 value)
+        external
+        onlyCustodian
+        returns (uint256)
+    {
         if ((custodianRoles[msg.sender] & typeMask) != typeMask) {
             revert UnauthorizedForProposalType(typeMask, custodianRoles[msg.sender]);
         }
 
+        return _createProposal(description, typeMask, data, value);
+    }
+
+    function _createProposal(
+        string memory description,
+        uint256 typeMask,
+        bytes memory data,
+        uint256 value
+    ) internal returns (uint256) {
         uint256 id = proposalCount++;
         Proposal storage p = proposals[id];
         p.id = id;
         p.proposer = msg.sender;
         p.description = description;
         p.typeMask = typeMask;
-        
+        p.data = data;
+        p.value = value;
+
         // Auto-vote yes
         p.yesVotes = 1;
         p.hasVoted[msg.sender] = true;
-        
+
         emit ProposalCreated(id, typeMask, msg.sender);
         emit VoteCast(id, msg.sender, true);
-        
+
         return id;
+    }
+
+    function getProposal(uint256 proposalId) public view returns (uint256, bytes memory, uint256) {
+        Proposal storage p = proposals[proposalId];
+        if (p.proposer == address(0)) revert ProposalNotFound();
+        return (p.typeMask, p.data, p.value);
     }
 
     /**
