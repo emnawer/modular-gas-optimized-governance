@@ -80,34 +80,125 @@ After deployment, verify your contract on Etherscan using the Truffle verificati
 
 * **Gas Optimized:** Uses uint256 bitmasks for Role-Based Access Control (RBAC) and User Statuses (e.g., Blacklist, VIP), reducing storage usage and gas costs compared to standard libraries.  
 * **Modular Design:** Abstract contracts that can be mixed and matched to build complex, secure systems.  
-* **Legacy Consensus:** Includes a reference implementation of custom "2-of-3" multi-signature consensus without external dependencies.
+* **Multi-signature Governance:** Custom "2-of-3" multi-signature consensus without external dependencies.  
+* **Reentrancy Protection:** Built-in reentrancy guard for critical functions to prevent common attack vectors.  
+* **Comprehensive Security:** User status management, asset recovery, and granular pause controls.
 
 ## 📚 Documentation
 
 Detailed documentation for each module can be found in the `docs/` folder:
 
 * **[Access Control](docs/AccessControl.md):** Efficient role management using bitmasks.
-* **[Security Modules](docs/Security.md):** User flags (Blacklist/VIP) and Asset Recovery.
+* **[Security Modules](docs/Security.md):** User flags (Blacklist/VIP), reentrancy protection, and Asset Recovery.
 * **[Governance](docs/Governance.md):** Custodian Multisig, Timelocks, and Hybrid patterns.
 * **[Crowdsale](docs/Crowdsale.md):** Logic for ETH-to-Token sales.
+* **[Pausable](docs/Pausable.md):** Granular feature-level pause controls.
 
 ## 📂 Quick Usage Examples
 
 ### 1. Access Control
 ```solidity
-import "./modules/ContractAccessControl.sol";
+import "./modules/AccessControl.sol";
 
-contract MySecureContract is ContractAccessControl {
+contract MySecureContract is AccessControl {
     uint256 constant ROLE_ADMIN = 1 << 0; // 1
 
-    function adminAction() external onlyContractRole(ROLE_ADMIN) {
+    function adminAction() external onlyRole(ROLE_ADMIN) {
         // ...
     }
 }
 ```
 
-### 2. Hybrid Governance (The "Super Owner" Pattern)
-A hybrid module bridging standard `Ownable` (fast, single-key) with `CustodianGovernance` (slow, multi-sig).
+### 2. Granular Pausable
+```solidity
+import "./modules/GranularPausable.sol";
+
+contract MyToken is GranularPausable {
+    uint256 public constant PAUSE_MINT = 1 << 0; // 1
+    uint256 public constant PAUSE_TRANSFER = 1 << 1; // 2
+
+    function mint(address to, uint256 amount) external whenNotPaused(PAUSE_MINT) {
+        // Minting can be paused independently
+    }
+
+    function transfer(address to, uint256 amount) public override whenNotPaused(PAUSE_TRANSFER) {
+        // Transfers can be paused independently
+    }
+
+    function pauseMinting() external onlyAdmin {
+        _pauseFeature(PAUSE_MINT);
+    }
+}
+```
+
+### 3. Reentrancy Protection
+```solidity
+import "./modules/Security.sol";
+
+contract MySecureContract is ReentrancyGuard {
+    
+    function sensitiveOperation() external nonReentrant {
+        // This function is protected against reentrancy attacks
+        // Critical state changes and external calls go here
+    }
+}
+```
+
+### 4. Crowdsale
+```solidity
+import "./modules/Crowdsale.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract MyTokenSale is Crowdsale, ERC20 {
+    constructor() ERC20("MyToken", "MTK") {
+        tokensPerETH = 1000; // 1 ETH = 1000 tokens
+        saleActive = true;
+    }
+
+    // Define how tokens are delivered to buyers
+    function _deliverTokens(address beneficiary, uint256 tokenAmount) internal override {
+        _mint(beneficiary, tokenAmount); // Mint new tokens
+    }
+
+    // Define who can manage the sale
+    function _checkSaleAuth() internal view override {
+        require(msg.sender == owner(), "Not authorized");
+    }
+}
+```
+
+### 5. Timelock
+```solidity
+import "./modules/Timelock.sol";
+
+contract CriticalSettings is Timelock {
+    uint256 public criticalParameter;
+    
+    function scheduleParameterChange(uint256 newValue) external {
+        bytes32 opId = keccak256(abi.encode("PARAM_CHANGE", newValue));
+        _scheduleOperation(opId, 3 days); // 3 day delay
+    }
+    
+    function executeParameterChange(uint256 newValue) external {
+        bytes32 opId = keccak256(abi.encode("PARAM_CHANGE", newValue));
+        _checkAndClearOperation(opId); // Will revert if delay not passed
+        criticalParameter = newValue;
+    }
+}
+```
+
+### 6. Hybrid Governance (The "Super Owner" Pattern)
+
+A powerful pattern combining standard `Ownable` speed with `CustodianGovernance` security, perfect for projects that need both operational efficiency and decentralized oversight.
+
+#### 🎯 When to Use Hybrid Governance
+
+* **DeFi Protocols:** Fast parameter updates with community oversight on critical changes
+* **Gaming Platforms:** Instant game settings with token supply controls
+* **Enterprise DeFi:** Business agility with board-level security controls
+* **DAO Transition:** Start with centralized control, gradually decentralize
+
+#### 🛠 Implementation Example
 
 ```solidity
 import "./modules/CustodianGovernance.sol";
@@ -123,6 +214,32 @@ contract HybridApp is Ownable, CustodianGovernance {
     }
 }
 ```
+
+#### 📊 Speed vs Security Trade-offs
+
+| Operation Type | Speed | Control | Best For |
+|----------------|-------|---------|----------|
+| **Daily Operations** | ⚡ Instant | Owner | Fees, parameters, metadata |
+| **Emergency Actions** | ⚡ Instant | Owner | Pause, emergency fixes |
+| **Critical Changes** | 🐢 Voting | Custodians | Minting, upgrades, ownership |
+| **Community Decisions** | 🐢 Voting | Custodians | Major policy changes |
+
+#### 🚀 Key Benefits
+
+* **No Daily Bottlenecks:** Routine operations don't require voting
+* **Community Oversight:** Critical decisions need multi-signature approval  
+* **Accountability:** Custodians can remove abusive owners
+* **Flexibility:** Can evolve toward full DAO governance over time
+* **Emergency Response:** Owner can act fast in crises
+
+#### ⚠️ Security Best Practices
+
+1. **Strong Owner Security:** Use multi-sig wallets or hardware wallets for owner key
+2. **Diverse Custodians:** Select from different organizations/geographies
+3. **Clear Proposal Types:** Define what requires voting vs instant execution
+4. **Gradual Decentralization:** Start centralized, increase community control over time
+
+For a complete working example, see [OpenZeppelinToken.sol](contracts/OpenZeppelinToken.sol).
 
 
 ## **⛽ Why Bitmasks?**

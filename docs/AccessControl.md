@@ -1,6 +1,6 @@
 # Access Control Module
 
-**File:** `modules/ContractAccessControl.sol`
+**File:** `modules/AccessControl.sol`
 
 This module implements **Role-Based Access Control (RBAC)** using `uint256` bitmasks. This approach is significantly more gas-efficient than standard boolean mappings used by libraries like OpenZeppelin's `AccessControl`.
 
@@ -21,9 +21,9 @@ Standard implementations use `mapping(bytes32 => mapping(address => bool))`.
 3. **Use Modifiers** to protect functions.
 
 ```solidity
-import "../modules/ContractAccessControl.sol";
+import "../modules/AccessControl.sol";
 
-contract MyContract is ContractAccessControl {
+contract MyContract is AccessControl {
     
     // Define Roles (Powers of 2)
     uint256 public constant ROLE_ADMIN  = 1 << 0; // 1
@@ -32,28 +32,28 @@ contract MyContract is ContractAccessControl {
 
     constructor() {
         // Grant Admin role to deployer
-        _grantContractRole(ROLE_ADMIN, msg.sender);
+        _grantRole(ROLE_ADMIN, msg.sender);
     }
 
     // Protect functions
-    function mint(address to, uint256 amount) external onlyContractRole(ROLE_MINTER) {
+    function mint(address to, uint256 amount) external onlyRole(ROLE_MINTER) {
         // ...
     }
 
     // Admin function to grant roles
-    function addMinter(address newMinter) external onlyContractRole(ROLE_ADMIN) {
-        _grantContractRole(ROLE_MINTER, newMinter);
+    function addMinter(address newMinter) external onlyRole(ROLE_ADMIN) {
+        _grantRole(ROLE_MINTER, newMinter);
     }
 }
 ```
 
 ## 🔍 API Reference
 
-### `hasContractRole(address account, uint256 role)`
+### `hasRole(address account, uint256 role)`
 Returns `true` if the account possesses the specified role bit.
 
-### `_grantContractRole(uint256 role, address account)`
+### `_grantRole(uint256 role, address account)`
 Internal. Adds the role bit to the account's mask. Does nothing if already granted.
 
-### `_revokeContractRole(uint256 role, address account)`
+### `_revokeRole(uint256 role, address account)`
 Internal. Removes the role bit from the account's mask.

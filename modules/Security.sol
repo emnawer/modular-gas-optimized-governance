@@ -67,6 +67,39 @@ abstract contract UserStatus {
 }
 
 /**
+ * @title ReentrancyGuard
+ * @notice Contract module that helps prevent reentrant calls to a function.
+ * @dev Based on OpenZeppelin's ReentrancyGuard but optimized for gas.
+ */
+abstract contract ReentrancyGuard {
+    /// @dev Counter for reentrancy guard
+    uint256 private _reentrancyGuard;
+
+    /// @notice Error thrown when reentrancy is detected
+    error ReentrantCall();
+
+    /// @dev The default value for the reentrancy guard counter
+    uint256 private constant _NOT_ENTERED = 1;
+    /// @dev The value set when the function is entered
+    uint256 private constant _ENTERED = 2;
+
+    /**
+     * @dev Modifier to prevent reentrancy
+     */
+    modifier nonReentrant() {
+        // On the first call to nonReentrant, _notEntered will be true
+        if (_reentrancyGuard != _NOT_ENTERED) revert ReentrantCall();
+        
+        // Any calls to nonReentrant after this point will fail
+        _reentrancyGuard = _ENTERED;
+        _;
+        
+        // By storing the original value once again, a refund is triggered (see https://eips.ethereum.org/EIPS/eip-2200)
+        _reentrancyGuard = _NOT_ENTERED;
+    }
+}
+
+/**
  * @title Rescuable
  * @notice Standard logic to recover ETH and ERC20 tokens sent to the contract by mistake.
  */

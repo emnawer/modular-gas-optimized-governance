@@ -32,6 +32,7 @@ contract OpenZeppelinToken is
     uint256 public constant PROPOSAL_MINT = 1 << 0;
     uint256 public constant PROPOSAL_BLACKLIST = 1 << 1;
     uint256 public constant PROPOSAL_UPGRADE = 1 << 2;
+    uint256 public constant PROPOSAL_REPLACE_OWNER = 1 << 3;
 
     /**
      * @dev Initialize the token with initial custodians
@@ -73,6 +74,10 @@ contract OpenZeppelinToken is
         _createProposal(status ? "Blacklist account" : "Unblacklist account", PROPOSAL_BLACKLIST, abi.encode(account, status), 0);
     }
 
+    function proposeReplaceOwner(address newOwner) external onlyRole(ROLE_CUSTODIAN) {
+        _createProposal("Replace contract owner", PROPOSAL_REPLACE_OWNER, abi.encode(newOwner), 0);
+    }
+
     // ========== Internal Overrides ==========
 
     function _executeProposal(uint256 proposalId) internal override {
@@ -88,6 +93,9 @@ contract OpenZeppelinToken is
             } else {
                 _unsetUserFlag(account, FLAG_BLACKLISTED);
             }
+        } else if (proposalType == PROPOSAL_REPLACE_OWNER) {
+            address newOwner = abi.decode(data, (address));
+            _transferOwnership(newOwner);
         }
     }
 
@@ -106,5 +114,27 @@ contract OpenZeppelinToken is
     function updateMetadata(string memory name, string memory symbol) external onlyOwner {
         // Placeholder for metadata updates. Most ERC20 implementations do not
         // allow changing name/symbol post-deployment without upgradeability.
+    }
+    
+    // ========== Emergency Functions ==========
+    
+    function emergencyPause() external onlyOwner {
+        _pause();
+    }
+    
+    function emergencyUnpause() external onlyOwner {
+        _unpause();
+    }
+    
+    function emergencyBurn(address from, uint256 amount) external onlyOwner {
+        _burn(from, amount);
+    }
+    
+    function emergencySetUserFlag(address account, uint256 flag) external onlyOwner {
+        _setUserFlag(account, flag);
+    }
+    
+    function emergencyUnsetUserFlag(address account, uint256 flag) external onlyOwner {
+        _unsetUserFlag(account, flag);
     }
 }

@@ -18,6 +18,7 @@ contract SuperToken is
     ERC20Combo, 
     AccessControl, 
     UserStatus, 
+    ReentrancyGuard,
     Rescuable, 
     Crowdsale, 
     CustodianGovernance,
@@ -71,11 +72,11 @@ contract SuperToken is
     // ===========================================
     //             Public Actions
     // ===========================================
-    function burn(uint256 amount) external {
+    function burn(uint256 amount) external nonReentrant {
         _burn(msg.sender, amount);
     }
 
-    function mint(address to, uint256 amount) external onlyRole(ROLE_MINTER) whenNotPaused(PAUSE_MINT) {
+    function mint(address to, uint256 amount) external onlyRole(ROLE_MINTER) whenNotPaused(PAUSE_MINT) nonReentrant {
         _mint(to, amount);
     }
 
@@ -126,7 +127,7 @@ contract SuperToken is
         _scheduleOperation(opId, 1 days);
     }
 
-    function executeHugeMint(address to, uint256 amount) external onlyRole(ROLE_ADMIN) {
+    function executeHugeMint(address to, uint256 amount) external onlyRole(ROLE_ADMIN) nonReentrant {
         bytes32 opId = keccak256(abi.encode(HUGE_MINT_TYPE, to, amount));
         _checkAndClearOperation(opId);
         _mint(to, amount);
